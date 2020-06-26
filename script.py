@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from getpass import getpass
+import yaml
 import argparse
 
 #
@@ -11,10 +12,8 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Collects statistics related to GitHub pull requests.")
-    parser.add_argument("org", help="A GitHub organization.")
-    parser.add_argument("team", help="A GitHub team within the organzation.")
-    #parser.add_argument("config", help="A configuration file for this script.")
-    parser.add_argument("--output-file", default="result.pdf", help="A file which should contain PR statistics.")
+    parser.add_argument("config", help="A configuration file for this script.")
+    parser.add_argument("--output", default="result.pdf", help="A file which should contain PR statistics.")
     return parser.parse_args()
 
 def unique(lst):
@@ -32,40 +31,44 @@ def find_team_with_name(teams, name):
 
 if __name__ == "__main__":
     args = parse_args()
+    with open(args.config, 'r') as config_file:
+        config = yaml.safe_load(config_file.read())
+    
     token = getpass(prompt="Please enter your GitHub token: ")
     gh = Github(token)
-    org_teams = gh.get_organization(args.org).get_teams()
-    target_team = find_team_with_name(org_teams, args.team)
+    org_teams = gh.get_organization(config["org"]).get_teams()
+    target_team = find_team_with_name(org_teams, config["team"])
     team_members = [team_member.login for team_member in target_team.get_members()]
-    team_repos = target_team.get_repos()
+    team_repos = [repo for repo in target_team.get_repos() if repo.name in config["repos"]]
 
-    with PdfPages(args.output_file) as pdf:
-        for repo in team_repos:
-            print(repo.name)
-            pulls = repo.get_pulls(state="closed")
-            initiators = [pr.user.login for pr in pulls
-                        if (pr.merged_at is not None) and
-                        (pr.merged_at >= datetime.now()-timedelta(days=90))]
-            labels = unique(initiators)
-            sizes = [0] * len(labels)
-            label_to_percentage = {}
+    pdf = PdfPages(args.output)
+    for repo in team_repos:
+        print(repo.name)
+        pulls = repo.get_pulls(state="closed")
+        initiators = [pr.user.login for pr in pulls
+                    if (pr.merged_at is not None) and
+                    (pr.merged_at >= datetime.now()-timedelta(days=90))]
+        labels = unique(initiators)
+        sizes = [0] * len(labels)
+        label_to_percentage = {}
 
-            for label in labels:
-                sizes[labels.index(label)] = initiators.count(label)
-            total_size = sum(sizes)
+        for label in labels:
+            sizes[labels.index(label)] = initiators.count(label)
+        total_size = sum(sizes)
 
-            for label in labels:
-                percentage = (sizes[labels.index(label)] / total_size) * 100
-                label_to_percentage[label] = percentage
+        for label in labels:
+            percentage = (sizes[labels.index(label)] / total_size) * 100
+            label_to_percentage[label] = percentage
 
-            labels = []
-            for label, percentage in sorted(label_to_percentage.items(), key=lambda item: item[1], reverse=True):
-                labels.append("{} - {:.2f}%".format(label, percentage))
+        labels = []
+        for label, percentage in sorted(label_to_percentage.items(), key=lambda item: item[1], reverse=True):
+            labels.append("{} - {:.2f}%".format(label, percentage))
 
-            sizes.sort(reverse=True)
-            patches, texts = plt.pie(sizes, startangle=90)
-            plt.legend(patches, labels, loc="best")
-            plt.axis("equal")
-            plt.tight_layout()
-            plt.title(f"{repo.name}")
-            pdf.savefig()
+        sizes.sort(reverse=True)
+        patches, texts = plt.pie(sizes, startangle=90)
+        plt.legend(patches, labels, loc="best")
+        plt.axis("equal")
+        plt.tight_layout()
+        plt.title(f"{repo.name}")
+        pdf.savefig()
+    pdf.close()
