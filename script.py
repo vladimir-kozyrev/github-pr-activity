@@ -17,7 +17,7 @@ def parse_args():
         default="all", metavar="REPO")
     parser.add_argument("-d", "--pr-age-in-days", help="look only for PRs that have been merged in the last N days",
         default=30, metavar="DAYS", type=int, dest="pr_age_in_days")
-    parser.add_argument("--output", default="result.pdf", help="PDF file that will contain PR statistics",
+    parser.add_argument("-o", "--output", default="result.pdf", help="PDF file that will contain PR statistics",
         metavar="EXAMPLE.pdf")
     parser.add_argument("-l", "--log-level", help="log level", default="INFO", dest="log_level")
     return parser.parse_args()
