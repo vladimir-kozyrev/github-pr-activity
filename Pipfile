@@ -12,6 +12,7 @@ matplotlib = "*"
 alembic = "*"
 pypdf2 = "*"
 pyyaml = "*"
+loguru = "*"
 
 [requires]
 python_version = "3.8"
