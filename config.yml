@@ -1,7 +1,0 @@
----
-org: incountry
-team: devops
-repos:
-  - infra
-  - terraform
-  - jenkins
