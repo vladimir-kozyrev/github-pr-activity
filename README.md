@@ -11,7 +11,7 @@ Usage
 $ pip3 install pipenv
 $ pipenv install
 $ pipenv shell
-$ python3 -h
+$ python3 script.py -h
 ```
 
 Once you execute the script, you will be asked for a GitHub token.  
