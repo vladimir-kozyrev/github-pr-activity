@@ -2,7 +2,7 @@ Overview
 --------
 
 This project allows you to peer into which members of your team create the most pull requests within your organization.
-This is important infomration that shows a person's activity within organization and helps make data-driven decisions instead of thinking of someone's performance based on the gut feeling.
+This is important infomration that shows a person's activity within the org and helps make data-driven decisions instead of thinking of someone's performance based on the gut feeling.
 
 Usage
 -----
@@ -36,6 +36,6 @@ $ python3 script.py myorg myteam --repos repoX --output /tmp/repoX.pdf
 Resulting report
 ----------------
 
-In the end, you will get a PDF document with a number of PRs submitted by the team members. Each repo will be locted on its own page.
+In the end, you will get a PDF document showing a number of PRs submitted by the team members. Each repo will be locted on its own page.
 
 ![Example pie chart](https://i.postimg.cc/Y9LFr2gm/example.png "Example pie chart")
